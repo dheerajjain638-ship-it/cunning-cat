@@ -30,10 +30,19 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Generate platform folders if missing
-        run: bash tool/ensure_platforms.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate brand images (logo, icon, splash)
+        run: |
+          pip install pillow
+          python tool/make_icon.py
 
       - run: flutter pub get
+
+      - name: Generate platform folders, app icon and splash
+        run: bash tool/ensure_platforms.sh
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos
@@ -63,10 +72,19 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Generate platform folders if missing
-        run: bash tool/ensure_platforms.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate brand images (logo, icon, splash)
+        run: |
+          pip install pillow
+          python tool/make_icon.py
 
       - run: flutter pub get
+
+      - name: Generate platform folders, app icon and splash
+        run: bash tool/ensure_platforms.sh
 
       - name: Build iOS (no code signing; compile check)
         run: flutter build ios --release --no-codesign
