@@ -5,20 +5,35 @@
 /// a *listing* is one merchant/seller offering that variant.
 library;
 
-enum Category { mobiles, laptops, televisions }
+import 'package:flutter/widgets.dart';
 
-extension CategoryLabel on Category {
-  String get label => switch (this) {
-        Category.mobiles => 'Mobiles',
-        Category.laptops => 'Laptops',
-        Category.televisions => 'TVs',
-      };
+class Category {
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  /// Aspects reviewers score for this kind of product.
+  final List<String> aspects;
+
+  /// Extra words people type for this category ("fridge", "earbuds").
+  final List<String> synonyms;
+
+  const Category({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.aspects,
+    this.synonyms = const [],
+  });
 }
 
 class Merchant {
   final String id;
   final String name;
-  const Merchant({required this.id, required this.name});
+  final Color color;
+  const Merchant({required this.id, required this.name, required this.color});
 }
 
 class Variant {
@@ -28,12 +43,18 @@ class Variant {
   final Category category;
   final String variantLabel; // "12GB / 256GB · Navy"
   final Map<String, String> keySpecs;
+  final int basePrice; // demo reference price used to generate listings
+  final double rating; // 0-5
+  final int reviewCount;
   const Variant({
     required this.id,
     required this.familyName,
     required this.brand,
     required this.category,
     required this.variantLabel,
+    required this.basePrice,
+    required this.rating,
+    required this.reviewCount,
     this.keySpecs = const {},
   });
 
