@@ -159,7 +159,12 @@ class RatingStars extends StatelessWidget {
         const SizedBox(width: 4),
         Text(rating.toStringAsFixed(1), style: TextStyle(fontSize: size * 0.9, fontWeight: FontWeight.w700)),
         if (count != null)
-          Text(' ($count)', style: TextStyle(fontSize: size * 0.85, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Flexible(
+            child: Text(' ($count)',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: size * 0.85, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          ),
       ],
     );
   }
@@ -181,7 +186,12 @@ class Pill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 14, color: color), const SizedBox(width: 4)],
-          Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
+          Flexible(
+            child: Text(text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
+          ),
         ],
       ),
     );
