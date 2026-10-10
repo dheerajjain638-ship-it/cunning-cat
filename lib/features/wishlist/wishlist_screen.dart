@@ -15,13 +15,25 @@ class WishlistScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(wishlistProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Wishlist & alerts')),
+      appBar: AppBar(title: const Text('Wishlist & price alerts')),
       body: items.isEmpty
           ? const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text('Tap the heart on any product to track its price. Set a target and we will alert you.'),
+              padding: EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  CatLogo(size: 110),
+                  SizedBox(height: 12),
+                  Text('Nothing tracked yet', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                  SizedBox(height: 6),
+                  Text('Tap the heart on any product. Set a target price and Cunning Cat watches it for you.',
+                      textAlign: TextAlign.center),
+                ],
+              ),
             )
-          : ListView(children: [for (final w in items) _WishTile(item: w)]),
+          : ListView(
+              padding: const EdgeInsets.only(bottom: 24, top: 4),
+              children: [for (final w in items) _WishTile(item: w)],
+            ),
     );
   }
 }
@@ -40,23 +52,38 @@ class _WishTile extends ConsumerWidget {
         final hit = best != null && item.targetPrice != null && best.yourBest <= item.targetPrice!;
         return OutlinedCard(
           borderColor: hit ? BrandColors.emerald : null,
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                onTap: () => context.push('/product/${item.variantId}'),
-                child: Text(v.variant.displayName, style: const TextStyle(fontWeight: FontWeight.w700)),
-              ),
-              const SizedBox(height: 4),
-              Text(best == null ? 'No fresh price right now' : 'Your best price: ${rupees(best.yourBest)}'),
-              Text(item.targetPrice == null ? 'No target set' : 'Target: ${rupees(item.targetPrice!)}'),
-              if (hit)
-                const Text('Target reached!', style: TextStyle(color: BrandColors.emerald, fontWeight: FontWeight.w700)),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => _askTarget(context, ref, item),
-                  child: const Text('Set target price'),
+              ProductImage(variant: v.variant, size: 64, radius: 14),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: () => context.push('/product/${item.variantId}'),
+                      child: Text(v.variant.familyName, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(best == null ? 'No fresh price right now' : 'Your best price: ${rupees(best.yourBest)}'),
+                    Text(item.targetPrice == null ? 'No target set' : 'Alert at: ${rupees(item.targetPrice!)}',
+                        style: const TextStyle(color: BrandColors.slate)),
+                    if (hit)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Pill('Target reached', color: BrandColors.emerald, background: BrandColors.emeraldSoft,
+                            icon: Icons.notifications_active),
+                      ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () => _askTarget(context, ref, item),
+                        icon: const Icon(Icons.notifications_none),
+                        label: const Text('Set target price'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
