@@ -1,25 +1,29 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cunning_cat/app.dart';
 
 void main() {
-  testWidgets('home screen renders brand, search and demo banner', (tester) async {
+  testWidgets('home shows brand, search, categories and popular products', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: CunningCatApp()));
     await tester.pumpAndSettle();
     expect(find.text('Cunning Cat'), findsOneWidget);
-    expect(find.text('Search a product or paste a link'), findsOneWidget);
-    expect(find.textContaining('Demo data'), findsOneWidget);
+    expect(find.text('Search any product, brand or paste a link'), findsOneWidget);
+    expect(find.text('DEMO DATA'), findsWidgets);
+    expect(find.text('Shop by category'), findsOneWidget);
   });
 
-  testWidgets('opening a product shows your best price', (tester) async {
+  testWidgets('typing shows live results and opens the product verdict', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: CunningCatApp()));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Samsung Galaxy S25'));
+    await tester.enterText(find.byType(TextField).first, 'galaxy s25');
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Samsung Galaxy S25'));
+    expect(find.text('Samsung Galaxy S25'), findsWidgets);
+    await tester.tap(find.text('Samsung Galaxy S25').first);
     await tester.pumpAndSettle();
+    expect(find.text("CUNNING CAT'S VERDICT"), findsOneWidget);
     expect(find.text('YOUR BEST PRICE'), findsOneWidget);
-    expect(find.text('Compare stores'), findsOneWidget);
   });
 }
