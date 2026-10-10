@@ -15,6 +15,10 @@ void main() {
   });
 
   testWidgets('typing shows live results and opens the product verdict', (tester) async {
+    // A tall screen so the verdict and best-price cards are both laid out.
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(const ProviderScope(child: CunningCatApp()));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'galaxy s25');
