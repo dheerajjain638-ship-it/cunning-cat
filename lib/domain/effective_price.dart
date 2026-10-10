@@ -236,7 +236,11 @@ class DealVerdict {
   final DealLabel label;
   final String explanation;
   final bool mrpLooksInflated;
-  const DealVerdict(this.label, this.explanation, this.mrpLooksInflated);
+
+  /// 90-day median and lowest price (0 when there is not enough history).
+  final int medianPrice;
+  final int lowPrice;
+  const DealVerdict(this.label, this.explanation, this.mrpLooksInflated, {this.medianPrice = 0, this.lowPrice = 0});
 }
 
 DealVerdict assessDeal({
@@ -265,15 +269,17 @@ DealVerdict assessDeal({
 
   if (currentPrice <= low * 1.01) {
     return DealVerdict(DealLabel.lowestIn90Days,
-        'Lowest price we have seen in 90 days.', inflated);
+        'Lowest price we have seen in 90 days.', inflated, medianPrice: median, lowPrice: low);
   }
   if (currentPrice <= median * 0.95) {
     return DealVerdict(DealLabel.goodDeal,
-        'About ${((1 - currentPrice / median) * 100).round()}% below its usual price.', inflated);
+        'About ${((1 - currentPrice / median) * 100).round()}% below its usual price.', inflated,
+        medianPrice: median, lowPrice: low);
   }
   if (currentPrice > median * 1.05) {
     return DealVerdict(DealLabel.aboveUsual,
-        'Above its usual price. Consider waiting or setting an alert.', inflated);
+        'About ${((currentPrice / median - 1) * 100).round()}% above its usual price. Consider waiting or setting an alert.',
+        inflated, medianPrice: median, lowPrice: low);
   }
   return DealVerdict(
     DealLabel.typicalPrice,
@@ -281,5 +287,7 @@ DealVerdict assessDeal({
         ? 'The "$pctOff% off" is measured against MRP, but it has sold near this price for weeks.'
         : 'Close to its usual price over the last 90 days.',
     inflated,
+    medianPrice: median,
+    lowPrice: low,
   );
 }
