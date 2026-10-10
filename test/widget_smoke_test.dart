@@ -15,10 +15,6 @@ void main() {
   });
 
   testWidgets('typing shows live results and opens the product verdict', (tester) async {
-    // A tall screen so the verdict and best-price cards are both laid out.
-    tester.view.physicalSize = const Size(800, 3000);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
     await tester.pumpWidget(const ProviderScope(child: CunningCatApp()));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'galaxy s25');
@@ -28,6 +24,10 @@ void main() {
     await tester.tap(find.text('Samsung Galaxy S25').first);
     await tester.pumpAndSettle();
     expect(find.text("CUNNING CAT'S VERDICT"), findsOneWidget);
+    // The best-price card sits below the verdict; scroll the product page to it.
+    final productScroll = find.byWidgetPredicate(
+        (w) => w is Scrollable && w.axisDirection == AxisDirection.down);
+    await tester.scrollUntilVisible(find.text('YOUR BEST PRICE'), 200, scrollable: productScroll.first);
     expect(find.text('YOUR BEST PRICE'), findsOneWidget);
   });
 }
