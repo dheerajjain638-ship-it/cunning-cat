@@ -308,7 +308,7 @@ class _BankOffersStrip extends ConsumerWidget {
             SectionTitle('Top bank offers this week', icon: Icons.credit_card,
                 trailing: TextButton(onPressed: () => context.go('/wallet'), child: const Text('My cards'))),
             SizedBox(
-              height: 104,
+              height: 116,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -330,11 +330,12 @@ class _BankOffersStrip extends ConsumerWidget {
                         Text(merchantLabel(o.merchantId, merchants).toUpperCase(),
                             style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
                         const SizedBox(height: 6),
-                        Text(o.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                        const Spacer(),
+                        Expanded(
+                          child: Text(o.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                        ),
                         Text(o.minCart > 0 ? 'Min. order ${rupees(o.minCart)}' : 'No minimum',
                             style: const TextStyle(color: Colors.white70, fontSize: 11)),
                       ],
