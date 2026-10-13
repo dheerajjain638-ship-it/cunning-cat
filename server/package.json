@@ -1,0 +1,6 @@
+{
+  "name": "cunning-cat-api",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test worker.test.mjs" }
+}
