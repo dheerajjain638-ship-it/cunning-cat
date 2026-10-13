@@ -20,6 +20,13 @@ if [ -f ios/Runner/Info.plist ]; then
   /usr/bin/perl -0pi -e 's/(<key>CFBundleDisplayName<\/key>\s*<string>)[^<]*(<\/string>)/${1}Cunning Cat${2}/' ios/Runner/Info.plist
 fi
 
+# Release builds need the INTERNET permission for live prices and photos.
+MANIFEST=android/app/src/main/AndroidManifest.xml
+if [ -f "$MANIFEST" ] && ! grep -q 'android.permission.INTERNET' "$MANIFEST"; then
+  perl -0pi -e 's/(<manifest[^>]*>)/$1\n    <uses-permission android:name="android.permission.INTERNET"\/>/' "$MANIFEST"
+fi
+grep -q 'android.permission.INTERNET' "$MANIFEST"
+
 # App icon + native splash from assets/brand/*.png
 dart run flutter_launcher_icons
 dart run flutter_native_splash:create
