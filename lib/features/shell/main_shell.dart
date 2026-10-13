@@ -17,6 +17,8 @@ class MainShell extends StatelessWidget {
         ),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.search), label: 'Find'),
+          NavigationDestination(
+              icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Ask the Cat'),
           NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'Wishlist'),
           NavigationDestination(icon: Icon(Icons.credit_card), label: 'My cards'),
         ],
