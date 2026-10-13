@@ -1,7 +1,7 @@
 name: cunning_cat
 description: Cunning Cat - AI shopping decision app. Know more. Pay less. Buy better.
 publish_to: 'none'
-version: 0.2.0+2
+version: 0.3.0+3
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -13,6 +13,8 @@ dependencies:
   go_router: ^14.2.0
   intl: ^0.19.0
   url_launcher: ^6.3.0
+  http: ^1.2.2
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
