@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
+import 'data/live_models.dart';
+import 'features/ask/ask_screen.dart';
 import 'features/battle/battle_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/live/live_product_screen.dart';
+import 'features/live/live_search_screen.dart';
 import 'features/product/product_screen.dart';
 import 'features/search/search_results_screen.dart';
 import 'features/shell/main_shell.dart';
@@ -17,6 +21,7 @@ GoRouter buildRouter() => GoRouter(
           builder: (context, state, shell) => MainShell(navigationShell: shell),
           branches: [
             StatefulShellBranch(routes: [GoRoute(path: '/', builder: (c, s) => const HomeScreen())]),
+            StatefulShellBranch(routes: [GoRoute(path: '/ask', builder: (c, s) => const AskScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/wishlist', builder: (c, s) => const WishlistScreen())]),
             StatefulShellBranch(routes: [GoRoute(path: '/wallet', builder: (c, s) => const WalletScreen())]),
           ],
@@ -27,6 +32,15 @@ GoRouter buildRouter() => GoRouter(
             query: s.uri.queryParameters['q'] ?? '',
             categoryId: s.uri.queryParameters['cat'],
           ),
+        ),
+        GoRoute(
+          path: '/live',
+          builder: (c, s) => LiveSearchScreen(query: s.uri.queryParameters['q'] ?? ''),
+        ),
+        GoRoute(
+          path: '/live/product',
+          redirect: (c, s) => s.extra is LiveProduct ? null : '/',
+          builder: (c, s) => LiveProductScreen(product: s.extra! as LiveProduct),
         ),
         GoRoute(
           path: '/product/:id',
