@@ -8,10 +8,13 @@ import 'package:go_router/go_router.dart';
 import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../data/catalog.dart' show merchants;
+import '../../data/live_api.dart';
 import '../../data/models.dart';
+import '../../data/repository.dart' show queryFromLink;
 import '../../domain/advisor.dart' show merchantLabel;
 import '../../state/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/live_widgets.dart';
 import '../../widgets/product_cards.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -43,8 +46,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openResults(String q, {String? categoryId}) {
-    final query = q.trim();
+    var query = q.trim();
     if (query.isEmpty && categoryId == null) return;
+    if (LiveConfig.enabled) {
+      if (query.startsWith('http')) query = queryFromLink(query) ?? '';
+      if (query.isEmpty && categoryId != null) query = liveCategoryQueries[categoryId] ?? categoryId;
+      if (query.isEmpty) return;
+      ref.read(recentSearchesProvider.notifier).add(query);
+      _focus.unfocus();
+      context.push(Uri(path: '/live', queryParameters: {'q': query}).toString());
+      return;
+    }
     ref.read(recentSearchesProvider.notifier).add(query);
     _focus.unfocus();
     context.push(Uri(path: '/search', queryParameters: {
@@ -69,18 +81,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final searching = _live.isNotEmpty;
+    final live = LiveConfig.enabled;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _hero(context)),
-          if (searching)
+          if (searching && live)
+            SliverToBoxAdapter(child: _LiveSearchPrompt(query: _live, onTap: () => _openResults(_live)))
+          else if (searching)
             SliverToBoxAdapter(child: _LiveResults(query: _live, onSeeAll: () => _openResults(_live)))
           else ...[
             SliverToBoxAdapter(child: _categories(context)),
-            const SliverToBoxAdapter(child: _DealsCarousel()),
-            const SliverToBoxAdapter(child: _BankOffersStrip()),
+            const SliverToBoxAdapter(child: _AskTheCatCard()),
+            if (live)
+              SliverToBoxAdapter(child: _TrendingSearches(onPick: _openResults))
+            else ...[
+              const SliverToBoxAdapter(child: _DealsCarousel()),
+              const SliverToBoxAdapter(child: _BankOffersStrip()),
+            ],
             const SliverToBoxAdapter(child: _HowItWorks()),
-            const SliverToBoxAdapter(child: _PopularList()),
+            if (!live) const SliverToBoxAdapter(child: _PopularList()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ],
@@ -114,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-              const DemoBadge(),
+              if (LiveConfig.enabled) const LiveBadge() else const DemoBadge(),
             ],
           ),
           const SizedBox(height: 18),
@@ -414,6 +434,137 @@ class _PopularList extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// What a category chip searches for when prices are live.
+const liveCategoryQueries = {
+  'mobiles': 'best smartphones',
+  'laptops': 'laptops',
+  'tvs': 'smart tv 55 inch',
+  'audio': 'wireless earbuds',
+  'watches': 'smartwatch',
+  'tablets': 'tablet',
+  'fridges': 'double door refrigerator',
+  'washing': 'front load washing machine',
+  'acs': 'split ac 1.5 ton inverter',
+  'cameras': 'mirrorless camera',
+};
+
+const _trending = [
+  ('iPhone 16', Icons.phone_iphone),
+  ('Samsung Galaxy S25', Icons.smartphone),
+  ('OnePlus 13', Icons.smartphone),
+  ('Sony WH-1000XM5', Icons.headphones),
+  ('MacBook Air M4', Icons.laptop_mac),
+  ('LG OLED TV', Icons.tv),
+  ('boAt earbuds', Icons.headset),
+  ('Dyson vacuum', Icons.cleaning_services),
+  ('Air fryer', Icons.kitchen),
+  ('PS5', Icons.sports_esports),
+];
+
+class _LiveSearchPrompt extends StatelessWidget {
+  const _LiveSearchPrompt({required this.query, required this.onTap});
+  final String query;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedCard(
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            const Icon(Icons.travel_explore_rounded, color: BrandColors.indigoMid, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Search live prices for "$query"',
+                      maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  const Text('Amazon, Flipkart, Croma, Reliance Digital and more', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AskTheCatCard extends StatelessWidget {
+  const _AskTheCatCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+      child: Material(
+        borderRadius: BorderRadius.circular(22),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.go('/ask'),
+          child: Ink(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: const Row(
+              children: [
+                CircleAvatar(radius: 26, backgroundColor: Colors.white, child: CatLogo(size: 40)),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ask the Cat',
+                          style: TextStyle(color: BrandColors.indigo, fontWeight: FontWeight.w900, fontSize: 18)),
+                      Text('"Best phone under ₹25,000 for camera?" Tell me what you need and I\'ll pick the best 3.',
+                          style: TextStyle(color: BrandColors.indigo, fontSize: 12.5, height: 1.3)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.auto_awesome, color: BrandColors.indigo),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrendingSearches extends StatelessWidget {
+  const _TrendingSearches({required this.onPick});
+  final void Function(String q, {String? categoryId}) onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle('Trending in India', icon: Icons.trending_up),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (label, icon) in _trending)
+                ActionChip(
+                  avatar: Icon(icon, size: 16, color: BrandColors.indigoMid),
+                  label: Text(label),
+                  onPressed: () => onPick(label),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
